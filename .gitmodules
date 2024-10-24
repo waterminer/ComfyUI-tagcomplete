@@ -1,0 +1,3 @@
+[submodule "danbooru_tag_db"]
+	path = danbooru_tag_db
+	url = https://github.com/waterminer/danbooru_tag_db/
