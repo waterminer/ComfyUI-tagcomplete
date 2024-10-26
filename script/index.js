@@ -11,7 +11,7 @@ function extensionAddMultilineWidget(o_Widget, node, name, options, app) {
     inputBox.value = options.defaultVal;
     inputBox.placeholder = options.placeholder || name;
     if (app.vueAppReady) {
-        container.spellcheck = o_InputEl.spellcheck;
+        inputBox.spellcheck = o_InputEl.spellcheck;
     }
     Object.assign(inputBox.style, {
         width: "100%",
@@ -20,7 +20,6 @@ function extensionAddMultilineWidget(o_Widget, node, name, options, app) {
     Object.assign(tooltip.style, {
         position: "absolute",
         display: "none",
-        backgroundColor: "#232355",
         color: "white",
         border: "1px solid #ccc",
         padding: "5px",
@@ -30,21 +29,47 @@ function extensionAddMultilineWidget(o_Widget, node, name, options, app) {
 
     function updateSelectWold(cursorPosition) {
         const text = inputBox.value;
-        const front = text.slice(0,cursorPosition);
-        selectTag = front.split(",").at(-1);
+        const front = text.slice(0, cursorPosition);
+        selectTag = front.split(",").at(-1).trim();
         if (selectTag)
             tooltip.style.display = 'block';
         else
             tooltip.style.display = 'none';
     }
 
+    function createTooltipList(json) {
+        const tooltipList = document.createElement('ul');
+        tooltipList.style.listStyleType="none"
+        for (const tagData of json) {
+            const li = document.createElement('li')
+            const element = document.createElement('button');
+            Object.assign(li.style, {
+                position: "center"
+            });
+            element.innerText = tagData.name;
+            li.append(element)
+            tooltipList.append(li);
+        }
+        return tooltipList
+    }
+
     async function updateTooltip(tag) {
-        const body = new FormData()
-        body.append("name",tag)
-        const res = await fetchApi("/water_miner/database",{
-            method:"GET",body
-        })
-        
+        const params = new URLSearchParams({ name: tag })
+        const result = await api.fetchApi(
+            `/water_miner/database?${params.toString()}`,
+            { method: "GET" }
+        )
+        if (result.status !== 200)
+            throw new Error(`Fetch Failed,code:${result.status}`);
+        const json = await result.json();
+        tooltip.replaceChildren(createTooltipList(json))
+    }
+
+    function getTextWidth(text, font) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        context.font = font;
+        return context.measureText(text).width;
     }
 
     inputBox.addEventListener('focus', () => {
@@ -58,24 +83,18 @@ function extensionAddMultilineWidget(o_Widget, node, name, options, app) {
         tooltip.style.display = 'none';
     });
 
-    inputBox.addEventListener('input', async() => {
+    inputBox.addEventListener('input', async () => {
         const cursorPosition = inputBox.selectionStart;
         const textBeforeCursor = inputBox.value.slice(0, cursorPosition);
         const textWidth = getTextWidth(textBeforeCursor, window.getComputedStyle(inputBox).font);
         updateSelectWold(cursorPosition);
         tooltip.style.left = `${inputBox.offsetLeft + textWidth}px`;
         tooltip.style.top = `${inputBox.offsetTop + 10}px`;
-        updateTooltip(selectTag);
+        await updateTooltip(selectTag);
     });
 
-    function getTextWidth(text, font) {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        context.font = font;
-        return context.measureText(text).width;
-    }
-
     container.append(inputBox, tooltip)
+
     const widget = node.addDOMWidget(name, 'extensioncustomtext', container, {
         getValue() {
             return inputBox.value;
@@ -84,6 +103,7 @@ function extensionAddMultilineWidget(o_Widget, node, name, options, app) {
             inputBox.value = v;
         }
     })
+
     widget.inputEl = container;
     inputBox.addEventListener('input', () => {
         widget.callback?.(widget.value);
@@ -94,8 +114,6 @@ function extensionAddMultilineWidget(o_Widget, node, name, options, app) {
 }
 
 function hijackString(app) {
-    console.log("injected!");
-
     const o_WidgetSTRING = app.widgets.STRING;
     app.widgets.STRING = function (node, inputName, inputData, app) {
         let res = o_WidgetSTRING(node, inputName, inputData, app);
