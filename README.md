@@ -15,3 +15,9 @@
 ```bash
 ~/ComfyUI/custom_nodes/ComfyUI-tagcomplete$ git submodule init
 ```
+
+3. install requirements
+
+```bash
+~/ComfyUI/custom_nodes/ComfyUI-tagcomplete$ pip install -r ./requirements.txt
+```
