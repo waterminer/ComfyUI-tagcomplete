@@ -53,7 +53,7 @@ ORDER BY
 LIMIT 10;
 
     '''
-    async with aiosqlite.connect("./danbooru_tag_db/database.db") as db:
+    async with aiosqlite.connect(f"{ROOT_PATH}/danbooru_tag_db/database.db") as db:
         db.row_factory = aiosqlite.Row
         cur = await db.execute(SQL)
         rows = await cur.fetchall()
