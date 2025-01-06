@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-tagcomplete"
+description = "This extension provides tag completion feature in textbox."
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["aiosqlite"]
+
+[project.urls]
+Repository = "https://github.com/waterminer/ComfyUI-tagcomplete"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-tagcomplete"
+Icon = ""
