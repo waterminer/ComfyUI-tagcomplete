@@ -60,3 +60,5 @@ LIMIT 10;
         result = [dict(row) for row in rows]
     body = json.dumps(result)
     return web.Response(body=body,status=200)
+
+NODE_CLASS_MAPPINGS = {}
